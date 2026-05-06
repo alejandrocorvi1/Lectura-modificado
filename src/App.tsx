@@ -96,14 +96,39 @@ export default function App() {
       setIsMobile(mobile);
       setIsPortrait(window.innerHeight > window.innerWidth);
     };
+
+    const tryFullscreen = async () => {
+      if (isMobile && !isPortrait && !document.fullscreenElement) {
+        try {
+          const docEl = document.documentElement;
+          if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen();
+          } else if ((docEl as any).webkitRequestFullscreen) {
+            await (docEl as any).webkitRequestFullscreen();
+          }
+          
+          if (window.screen.orientation && (window.screen.orientation as any).lock) {
+            await (window.screen.orientation as any).lock('landscape').catch(() => {});
+          }
+        } catch (e) {
+          // Interaction required
+        }
+      }
+    };
+
     checkDevice();
     window.addEventListener('resize', checkDevice);
     window.addEventListener('orientationchange', checkDevice);
+    window.addEventListener('touchstart', tryFullscreen, { once: false });
+    window.addEventListener('click', tryFullscreen, { once: false });
+
     return () => {
       window.removeEventListener('resize', checkDevice);
       window.removeEventListener('orientationchange', checkDevice);
+      window.removeEventListener('touchstart', tryFullscreen);
+      window.removeEventListener('click', tryFullscreen);
     };
-  }, []);
+  }, [isMobile, isPortrait]);
 
   // Sync ref for speech recognition access without re-starting service
   useEffect(() => {

@@ -238,8 +238,30 @@ export default function App() {
     };
   }, [isPlaying, animate]);
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
     const nextPlaying = !isPlaying;
+    
+    // Fullscreen and Orientation Lock for Mobile
+    if (!isPlaying && isMobile) {
+      try {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if ((docEl as any).webkitRequestFullscreen) {
+          await (docEl as any).webkitRequestFullscreen();
+        }
+
+        // Try to lock orientation to landscape
+        if (window.screen.orientation && (window.screen.orientation as any).lock) {
+          await (window.screen.orientation as any).lock('landscape').catch((e: any) => {
+            console.warn("Orientation lock failed:", e);
+          });
+        }
+      } catch (e) {
+        console.warn("Fullscreen request failed:", e);
+      }
+    }
+
     if (!isPlaying) {
       setCurrentWord(getNextWord());
       setScore(0);
@@ -280,10 +302,10 @@ export default function App() {
       <div className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-px bg-text z-50 pointer-events-none opacity-20 md:opacity-100" />
 
       {/* Header */}
-      <header className={`${isMobile ? 'px-6 py-2' : 'px-12 py-8'} flex items-center justify-between border-b border-text/10 relative z-10 transition-all duration-300`}>
-        <div className="flex items-center gap-4 md:gap-8">
+      <header className={`${isMobile ? 'px-4 py-1' : 'px-12 py-8'} flex items-center justify-between border-b border-text/10 relative z-10 transition-all duration-300`}>
+        <div className="flex items-center gap-3 md:gap-8">
           <div className="flex flex-col">
-            <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-bold tracking-tighter uppercase mb-[-4px]`}>P.A.Z. Edición Niños</span>
+            <span className={`${isMobile ? 'text-[9px]' : 'text-xs'} font-bold tracking-tighter uppercase mb-[-4px]`}>P.A.Z. Edición Niños</span>
             <span className={`${isMobile ? 'hidden' : 'block'} text-[10px] font-mono opacity-50 uppercase tracking-widest`}>VER_M_2.4.0</span>
           </div>
 
@@ -292,35 +314,35 @@ export default function App() {
               <motion.div 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`flex items-center ${isMobile ? 'gap-2 px-4 py-2' : 'gap-4 px-8 py-5'} bg-text text-bg rounded-xl shadow-2xl border-2 border-white/20`}
+                className={`flex items-center ${isMobile ? 'gap-1 px-3 py-1' : 'gap-4 px-8 py-5'} bg-text text-bg rounded-xl shadow-2xl border-2 border-white/20`}
               >
-                <Trophy size={isMobile ? 18 : 32} className="text-yellow-400 fill-yellow-400/20" />
-                <span className={`font-mono ${isMobile ? 'text-lg' : 'text-3xl'} font-black leading-none tracking-tighter`}>SCORE: {score}</span>
+                <Trophy size={isMobile ? 14 : 32} className="text-yellow-400 fill-yellow-400/20" />
+                <span className={`font-mono ${isMobile ? 'text-base' : 'text-3xl'} font-black leading-none tracking-tighter`}>SCORE: {score}</span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
         
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-2 md:gap-6">
           {isMicEnabled && isActualListening && (
             <motion.div 
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ repeat: Infinity, duration: 1 }}
-              className="flex items-center gap-2 px-3 py-1 border border-green-500/20 rounded-full"
+              className="flex items-center gap-1.5 px-2 py-0.5 border border-green-500/20 rounded-full"
             >
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              <span className="font-mono text-[9px] uppercase tracking-widest text-green-600 hidden md:inline">Escuchando...</span>
+              <div className="w-1 h-1 bg-green-500 rounded-full" />
+              <span className="font-mono text-[8px] uppercase tracking-widest text-green-600 hidden md:inline">Escuchando...</span>
             </motion.div>
           )}
 
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 animate-pulse'} transition-colors duration-500`} />
-            <span className="font-mono text-[11px] uppercase tracking-widest opacity-80 hidden md:inline">
+          <div className="flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 animate-pulse'} transition-colors duration-500`} />
+            <span className="font-mono text-[10px] uppercase tracking-widest opacity-80 hidden md:inline">
               Estado: {isPlaying ? "Operativo" : "Inactivo"}
             </span>
           </div>
-          <div className="w-px h-4 bg-text opacity-20 hidden md:block" />
-          <span className="font-mono text-[11px] uppercase opacity-50 tracking-widest">
+          <div className="w-px h-3 bg-text opacity-20 hidden md:block" />
+          <span className="font-mono text-[10px] uppercase opacity-50 tracking-widest">
             {isMobile ? currentWord?.category?.slice(0, 3) : `Cat: ${currentWord?.category || "---"}`}
           </span>
         </div>
@@ -378,17 +400,17 @@ export default function App() {
       </main>
 
       {/* Footer / Controls */}
-      <footer className={`${isMobile ? 'p-4' : 'p-12'} border-t border-text/10 bg-bg relative z-10 transition-all duration-300`}>
-        <div className="max-w-5xl mx-auto grid grid-cols-12 md:gap-12 gap-4 items-end">
+      <footer className={`${isMobile ? 'p-2' : 'p-12'} border-t border-text/10 bg-bg relative z-10 transition-all duration-300`}>
+        <div className="max-w-5xl mx-auto grid grid-cols-12 md:gap-12 gap-3 items-end">
           
           {/* Slider Control */}
           <div className="col-span-12 md:col-span-7 flex flex-col">
-            <div className={`flex justify-between items-end ${isMobile ? 'mb-1' : 'mb-4'}`}>
-              <label className="text-[10px] font-bold uppercase tracking-widest opacity-90">Intervalo</label>
-              <span className={`font-mono ${isMobile ? 'text-sm' : 'text-lg'} font-bold`}>{duration.toFixed(1)}s</span>
+            <div className={`flex justify-between items-end ${isMobile ? 'mb-0' : 'mb-4'}`}>
+              <label className="text-[9px] font-bold uppercase tracking-widest opacity-90">Intervalo</label>
+              <span className={`font-mono ${isMobile ? 'text-xs' : 'text-lg'} font-bold`}>{duration.toFixed(1)}s</span>
             </div>
             
-            <div className={`relative ${isMobile ? 'pt-2 pb-4' : 'pt-4 pb-12'}`}>
+            <div className={`relative ${isMobile ? 'pt-1 pb-2' : 'pt-4 pb-12'}`}>
               <input
                 type="range"
                 min="1"
@@ -417,20 +439,20 @@ export default function App() {
           </div>
 
           {/* Action Buttons */}
-          <div className={`col-span-12 md:col-span-5 flex gap-4 ${isMobile ? 'h-12' : 'h-16'}`}>
+          <div className={`col-span-12 md:col-span-5 flex gap-3 ${isMobile ? 'h-10' : 'h-16'}`}>
             <button
               onClick={() => {
                 setMicError(null);
                 setIsMicEnabled(!isMicEnabled);
               }}
-              className={`flex-none ${isMobile ? 'w-12' : 'w-16'} border-2 flex items-center justify-center transition-all relative ${
+              className={`flex-none ${isMobile ? 'w-10' : 'w-16'} border-2 flex items-center justify-center transition-all relative ${
                 isMicEnabled 
                 ? (micError ? 'bg-red-100 border-red-500 text-red-500' : 'bg-green-500 text-bg border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]') 
                 : 'bg-bg text-text/40 border-text/10 hover:border-text hover:text-text'
               }`}
               title={isMicEnabled ? "Desactivar Micrófono" : "Activar Micrófono"}
             >
-              {isMicEnabled ? <Mic size={isMobile ? 18 : 20} /> : <MicOff size={isMobile ? 18 : 20} />}
+              {isMicEnabled ? <Mic size={isMobile ? 16 : 20} /> : <MicOff size={isMobile ? 16 : 20} />}
               {micError && (
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[8px] px-2 py-1 uppercase whitespace-nowrap">
                   {micError}
@@ -439,7 +461,7 @@ export default function App() {
             </button>
             <button
               onClick={handleToggle}
-              className={`flex-1 border-2 border-text font-bold uppercase ${isMobile ? 'text-[10px]' : 'text-xs'} tracking-[0.2em] transition-all duration-200 active:scale-95 ${
+              className={`flex-1 border-2 border-text font-bold uppercase ${isMobile ? 'text-[9px]' : 'text-xs'} tracking-[0.2em] transition-all duration-200 active:scale-95 ${
                 isPlaying 
                 ? 'bg-text text-white hover:bg-bg hover:text-text' 
                 : 'bg-bg text-text hover:bg-text hover:text-white'

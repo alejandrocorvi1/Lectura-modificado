@@ -98,17 +98,13 @@ export default function App() {
     };
 
     const tryFullscreen = async () => {
-      if (isMobile && !isPortrait && !document.fullscreenElement) {
+      if (isMobile && !document.fullscreenElement) {
         try {
           const docEl = document.documentElement;
           if (docEl.requestFullscreen) {
             await docEl.requestFullscreen();
           } else if ((docEl as any).webkitRequestFullscreen) {
             await (docEl as any).webkitRequestFullscreen();
-          }
-          
-          if (window.screen.orientation && (window.screen.orientation as any).lock) {
-            await (window.screen.orientation as any).lock('landscape').catch(() => {});
           }
         } catch (e) {
           // Interaction required
@@ -128,7 +124,7 @@ export default function App() {
       window.removeEventListener('touchstart', tryFullscreen);
       window.removeEventListener('click', tryFullscreen);
     };
-  }, [isMobile, isPortrait]);
+  }, [isMobile]);
 
   // Sync ref for speech recognition access without re-starting service
   useEffect(() => {
@@ -266,7 +262,7 @@ export default function App() {
   const handleToggle = async () => {
     const nextPlaying = !isPlaying;
     
-    // Fullscreen and Orientation Lock for Mobile
+    // Fullscreen for Mobile
     if (!isPlaying && isMobile) {
       try {
         const docEl = document.documentElement;
@@ -274,13 +270,6 @@ export default function App() {
           await docEl.requestFullscreen();
         } else if ((docEl as any).webkitRequestFullscreen) {
           await (docEl as any).webkitRequestFullscreen();
-        }
-
-        // Try to lock orientation to landscape
-        if (window.screen.orientation && (window.screen.orientation as any).lock) {
-          await (window.screen.orientation as any).lock('landscape').catch((e: any) => {
-            console.warn("Orientation lock failed:", e);
-          });
         }
       } catch (e) {
         console.warn("Fullscreen request failed:", e);
@@ -295,31 +284,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex flex-col h-screen max-h-screen relative bg-bg selection:bg-text selection:text-bg border-[#1A1A1A] ${isMobile ? 'landscape:overflow-hidden' : ''}`}>
-      {/* Mobile Orientation Overlay */}
-      <AnimatePresence>
-        {isMobile && isPortrait && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-bg z-[200] flex flex-col items-center justify-center p-8 text-center"
-          >
-            <motion.div
-              animate={{ rotate: [0, 90, 90, 0] }}
-              transition={{ repeat: Infinity, duration: 2, times: [0, 0.4, 0.6, 1] }}
-              className="w-16 h-16 border-4 border-text rounded-lg mb-8 flex items-center justify-center"
-            >
-              <div className="w-8 h-1 bg-text rounded-full" />
-            </motion.div>
-            <h2 className="font-display text-2xl font-black uppercase tracking-tighter mb-4">Gira tu dispositivo</h2>
-            <p className="font-mono text-[10px] opacity-60 uppercase tracking-widest leading-relaxed max-w-xs">
-              P.A.Z. Edición Niños requiere el modo horizontal para una mejor experiencia de lectura.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div className={`flex flex-col h-screen max-h-screen relative bg-bg selection:bg-text selection:text-bg border-[#1A1A1A] ${isMobile ? 'overflow-hidden' : ''}`}>
       {/* Absolute center marks (Architectural Accent) */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-24 bg-text z-50 pointer-events-none opacity-20 md:opacity-100" />
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-24 bg-text z-50 pointer-events-none opacity-20 md:opacity-100" />
